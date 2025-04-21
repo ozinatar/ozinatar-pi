@@ -26,10 +26,7 @@ const Home = () => {
   const [environment, setEnvironment] = useState<Env | undefined>(undefined);
   const [compactMode, setCompactMode] = useState(false);
   const [planMode, setPlanMode] = useState(false);
-  const [piPrices, setPiPrices] = useState<EvePraisalResult | undefined>(
-    undefined,
-  );
-
+  const [piPrices, setPiPrices] = useState<EvePraisalResult | undefined>(undefined);
   const [colors, setColors] = useState<ColorSelectionType>(defaultColors);
   const [alertMode, setAlertMode] = useState(false);
 
@@ -41,10 +38,7 @@ const Home = () => {
     saveCharacters(charactersToSave);
   };
 
-  const updateCharacter = (
-    character: AccessToken,
-    updates: CharacterUpdate,
-  ) => {
+  const updateCharacter = (character: AccessToken, updates: CharacterUpdate) => {
     const charactersToSave = characters.map((c) => {
       if (c.character.characterId === character.character.characterId)
         return {
@@ -71,9 +65,7 @@ const Home = () => {
     );
   };
 
-  const handleCallback = async (
-    characters: AccessToken[],
-  ): Promise<AccessToken[]> => {
+  const handleCallback = async (characters: AccessToken[]): Promise<AccessToken[]> => {
     const code = searchParams?.get("code");
     if (code) {
       window.history.replaceState(null, "", "/");
@@ -135,17 +127,9 @@ const Home = () => {
       .then(setCharacters);
   };
 
-  const toggleCompactMode = () => {
-    setCompactMode(!compactMode);
-  };
-
-  const togglePlanMode = () => {
-    setPlanMode(!planMode);
-  };
-
-  const toggleAlertMode = () => {
-    setAlertMode(!alertMode);
-  };
+  const toggleCompactMode = () => setCompactMode(!compactMode);
+  const togglePlanMode = () => setPlanMode(!planMode);
+  const toggleAlertMode = () => setAlertMode(!alertMode);
 
   const updatePlanetConfig = (config: PlanetConfig) => {
     const charactersToSave = characters.map((c) => {
@@ -158,7 +142,6 @@ const Home = () => {
           ],
         };
       }
-
       return c;
     });
     setCharacters(charactersToSave);
@@ -173,7 +156,6 @@ const Home = () => {
     characterId: number;
   }): PlanetConfig => {
     const defaultConfig = { planetId, characterId, excludeFromTotals: false };
-
     return (
       characters
         .find((c) => c.character.characterId === characterId)
@@ -275,6 +257,18 @@ const Home = () => {
         }}
       >
         <ColorContext.Provider value={{ colors: colors, setColors: setColors }}>
+          {sessionReady && characters.length > 0 && (
+            <div style={{ backgroundColor: "#1a1a1a", color: "#00ff99", padding: "1rem", borderRadius: "8px", marginBottom: "1rem" }}>
+              <h3>✅ Personajes logueados:</h3>
+              <ul>
+                {characters.map((c) => (
+                  <li key={c.character.characterId}>
+                    {c.character.name} (ID: {c.character.characterId})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <MainGrid />
         </ColorContext.Provider>
       </CharacterContext.Provider>
