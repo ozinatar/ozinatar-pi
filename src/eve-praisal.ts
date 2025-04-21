@@ -17,27 +17,8 @@ export interface All {
   order_count: number;
 }
 
-export interface Buy {
-  avg: number;
-  max: number;
-  median: number;
-  min: number;
-  percentile: number;
-  stddev: number;
-  volume: number;
-  order_count: number;
-}
-
-export interface Sell {
-  avg: number;
-  max: number;
-  median: number;
-  min: number;
-  percentile: number;
-  stddev: number;
-  volume: number;
-  order_count: number;
-}
+export interface Buy extends All {}
+export interface Sell extends All {}
 
 export interface Prices {
   all: All;
@@ -75,35 +56,48 @@ export interface EvePraisalResult {
   appraisal: Appraisal;
 }
 
+// ✅ Tipado alineado al uso real
 export interface EvePraisalRequest {
-  items: { amount: number; typeId: number }[];
+  items: {
+    type_id: number;
+    quantity: number;
+  }[];
 }
 
 const PRAISAL_URL = process.env.NEXT_PUBLIC_PRAISAL_URL ?? "";
 
+// ✅ Solicitud principal
 export const getPraisal = async (
-  items: { quantity: number; type_id: number }[]
+  request: EvePraisalRequest
 ): Promise<EvePraisalResult | undefined> => {
-  const praisalRequest = {
-    market_name: "jita",
-    items,
-  };
+  try {
+    const res = await fetch(PRAISAL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request),
+    });
 
-  return fetch(PRAISAL_URL, {
-    method: "POST",
-    body: JSON.stringify(praisalRequest),
-    headers: {
-      "User-Agent": "EVE-PI https://github.com/calli-eve/eve-pi",
-    },
-  })
-    .then((res) => res.json())
-    .catch(() => console.log("Appraisal failed"));
+    if (!res.ok) {
+      console.error("Appraisal failed:", res.statusText);
+      return undefined;
+    }
+
+    return await res.json();
+  } catch (e) {
+    console.error("Appraisal failed:", e);
+    return undefined;
+  }
 };
 
+// ✅ Fetch completo con todos los PI
 export const fetchAllPrices = async (): Promise<EvePraisalResult> => {
-  const allPI = PI_TYPES_ARRAY.map((t) => {
-    return { quantity: 1, type_id: t.type_id };
-  });
+  const allPI = PI_TYPES_ARRAY.map((t) => ({
+    quantity: 1,
+    type_id: t.type_id,
+  }));
+
   return await fetch("api/praisal", {
     method: "POST",
     body: JSON.stringify(allPI),
